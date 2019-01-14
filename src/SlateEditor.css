@@ -41,3 +41,9 @@ span span.button.save_button:hover, span span.button.cancel_button:hover {
     color: #fff;
     border-color: transparent;
 }
+
+span.button.inActive {
+    pointer-events: none !important;
+    cursor: inherit !important;
+    opacity: 0.4;
+}

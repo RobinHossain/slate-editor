@@ -1,7 +1,7 @@
 import { Editor, getEventRange, getEventTransfer } from 'slate-react';
 import { Block, Value } from 'slate';
 import React, { Component } from 'react';
-import initValue from './value.json';
+import initValue from './defaultValues.json';
 import imageExtensions from 'image-extensions';
 import isUrl from 'is-url';
 import { isKeyHotkey } from 'is-hotkey';
@@ -15,6 +15,7 @@ import './SlateEditor.css';
  */
 
 const DEFAULT_NODE = 'paragraph'
+const userAccess = { save: true, cancel: true, uploadImage: true}
 
 /**
  * Define hotkey matchers.
@@ -121,8 +122,7 @@ class slateEditor extends Component {
         super();
         this.state = {
             value: initialValue,
-            showPopup: false,
-            files: []
+            userAccess: userAccess
         };
     }
 
@@ -171,6 +171,12 @@ class slateEditor extends Component {
      */
 
     render() {
+        const userAccess = this.state.userAccess;
+        let uploadButton;
+
+        if(userAccess.uploadImage){
+            uploadButton = <FileBase64 multiple={ true } onDone={ this.insertImageToEditor.bind(this) } />
+        }
         return (
             <div>
                 <Toolbar>
@@ -183,18 +189,16 @@ class slateEditor extends Component {
                     {this.renderBlockButton('block-quote', 'format_quote')}
                     {this.renderBlockButton('numbered-list', 'format_list_numbered')}
                     {this.renderBlockButton('bulleted-list', 'format_list_bulleted')}
+
                     <Button onMouseDown={this.onClickImage}>
                         <Icon>add_photo_alternate</Icon>
                     </Button>
-                    <FileBase64  class="inputfile inputfile-4"
-                                data-multiple-caption="{count} files selected"
-                                multiple={ true }
-                                onDone={ this.insertImageToEditor.bind(this) } />
+                    {uploadButton}
                     <Button onClick={this.saveCurrentState}>
-                        <span className='button save_button'>Save</span>
+                        <span className={`button save_button ${userAccess.save?'active':'inActive'}`}>Save</span>
                     </Button>
                     <Button onClick={this.cancelCurrentState}>
-                        <span className='button cancel_button'>Cancel</span>
+                        <span className={`button cancel_button ${userAccess.cancel?'active':'inActive'}`}>Cancel</span>
                     </Button>
                 </Toolbar>
                 <Editor
