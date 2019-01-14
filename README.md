@@ -1,12 +1,12 @@
 ## Available scripts for this task
-
+I used with node version v8.9.1 for development -
 In the project directory, you can run:
 
 ### `npm install`
 ### `npm start`
 
 The Project build with React and bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-Hopefully you would able to see the output with following url after run above command. [http://localhost:3000](http://localhost:3000).
+Hopefully you would able to see the output with following url after run above commands. [http://localhost:3000](http://localhost:3000).
 
 ## Features Implements on this task
 - [x] Standard rich text editor toolbar
@@ -18,5 +18,5 @@ Hopefully you would able to see the output with following url after run above co
 - [x] 'Save' to store in localstorage and 'Cancel' to restore previous default data
 - [x] For configurable data I used just a object variable where specified which features usable for user or which are not.
 
-
+#### Please let me know if you get any issue/error to run.
 
