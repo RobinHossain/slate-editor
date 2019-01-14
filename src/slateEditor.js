@@ -1,12 +1,15 @@
 import { Editor, getEventRange, getEventTransfer } from 'slate-react';
 import { Block, Value } from 'slate';
-import React from 'react';
-import initialValue from './value.json';
+import React, { Component } from 'react';
+import initValue from './value.json';
 import imageExtensions from 'image-extensions';
 import isUrl from 'is-url';
 import { isKeyHotkey } from 'is-hotkey';
 // import { Button, Icon, Toolbar } from 'components';
-import styled from '@emotion/styled'
+import styled from '@emotion/styled';
+import FileBase64 from './fileBase64';
+
+
 
 const Button = styled('span')`
   cursor: pointer;
@@ -116,6 +119,9 @@ const schema = {
                     const paragraph = Block.create('paragraph')
                     return editor.insertNodeByKey(node.key, node.nodes.size, paragraph)
                 }
+                default: {
+                    return;
+                }
             }
         },
     },
@@ -126,21 +132,32 @@ const schema = {
     },
 }
 
+// Update the initial content to be pulled from Local Storage if it exists.
+const existingValue = JSON.parse(localStorage.getItem('content'));
+const initialValue = Value.fromJSON(existingValue || initValue);
+
+
+
 /**
  * The rich text example.
  *
  * @type {Component}
  */
 
-class slateEditor extends React.Component {
+class slateEditor extends Component {
     /**
      * Deserialize the initial editor value.
      *
      * @type {Object}
      */
 
-    state = {
-        value: Value.fromJSON(initialValue),
+    constructor() {
+        super();
+        this.state = {
+            value: initialValue,
+            showPopup: false,
+            files: []
+        };
     }
 
     /**
@@ -152,7 +169,7 @@ class slateEditor extends React.Component {
 
     hasMark = type => {
         const { value } = this.state
-        return value.activeMarks.some(mark => mark.type == type)
+        return value.activeMarks.some(mark => mark.type === type)
     }
 
     /**
@@ -164,7 +181,7 @@ class slateEditor extends React.Component {
 
     hasBlock = type => {
         const { value } = this.state
-        return value.blocks.some(node => node.type == type)
+        return value.blocks.some(node => node.type === type)
     }
 
     /**
@@ -176,6 +193,10 @@ class slateEditor extends React.Component {
     ref = editor => {
         this.editor = editor
     }
+
+
+
+
 
     /**
      * Render.
@@ -197,7 +218,17 @@ class slateEditor extends React.Component {
                     {this.renderBlockButton('numbered-list', 'format_list_numbered')}
                     {this.renderBlockButton('bulleted-list', 'format_list_bulleted')}
                     <Button onMouseDown={this.onClickImage}>
-                        <Icon>image</Icon>
+                        <Icon>add_photo_alternate</Icon>
+                    </Button>
+                    <FileBase64  class="inputfile inputfile-4"
+                                data-multiple-caption="{count} files selected"
+                                multiple={ true }
+                                onDone={ this.insertImageToEditor.bind(this) } />
+                    <Button onClick={this.saveCurrentState}>
+                        <span className='button save_button'>Save</span>
+                    </Button>
+                    <Button onClick={this.cancelCurrentState}>
+                        <span className='button cancel_button'>Cancel</span>
                     </Button>
                 </Toolbar>
                 <Editor
@@ -389,7 +420,7 @@ class slateEditor extends React.Component {
         const { document } = value
 
         // Handle everything but list buttons.
-        if (type != 'bulleted-list' && type != 'numbered-list') {
+        if (type !== 'bulleted-list' && type !== 'numbered-list') {
             const isActive = this.hasBlock(type)
             const isList = this.hasBlock('list-item')
 
@@ -405,7 +436,7 @@ class slateEditor extends React.Component {
             // Handle the extra wrapping required for list buttons.
             const isList = this.hasBlock('list-item')
             const isType = value.blocks.some(block => {
-                return !!document.getClosest(block.key, parent => parent.type == type)
+                return !!document.getClosest(block.key, parent => parent.type === type)
             })
 
             if (isList && isType) {
@@ -416,7 +447,7 @@ class slateEditor extends React.Component {
             } else if (isList) {
                 editor
                     .unwrapBlock(
-                        type == 'bulleted-list' ? 'numbered-list' : 'bulleted-list'
+                        type === 'bulleted-list' ? 'numbered-list' : 'bulleted-list'
                     )
                     .wrapBlock(type)
             } else {
@@ -437,6 +468,28 @@ class slateEditor extends React.Component {
         const src = window.prompt('Enter the URL of the image:')
         if (!src) return
         this.editor.command(insertImage, src)
+    }
+
+    insertImageToEditor = (files) => {
+        const editor = this.editor;
+        files.forEach(function (file) {
+            // console.log(file);
+            editor.command(insertImage, file.base64)
+        })
+
+    }
+
+    saveCurrentState = event => {
+        event.preventDefault();
+        const value = this.state.value;
+        const content = JSON.stringify(value.toJSON());
+        localStorage.setItem('content', content);
+    }
+
+    cancelCurrentState = event => {
+        event.preventDefault();
+        this.setState({value: Value.fromJSON(initValue)})
+        localStorage.removeItem('content');
     }
 
 
