@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 // import logo from './logo.svg';
 import './App.css';
-import SlateEditor from './slateEditor';
+import SlateEditor from './SlateEditor';
 
 
 class App extends Component {

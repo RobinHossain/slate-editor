@@ -5,52 +5,8 @@ import initValue from './value.json';
 import imageExtensions from 'image-extensions';
 import isUrl from 'is-url';
 import { isKeyHotkey } from 'is-hotkey';
-// import { Button, Icon, Toolbar } from 'components';
-import styled from '@emotion/styled';
-import FileBase64 from './fileBase64';
-
-
-
-const Button = styled('span')`
-  cursor: pointer;
-  color: ${props =>
-    props.reversed
-        ? props.active ? 'white' : '#aaa'
-        : props.active ? 'black' : '#ccc'};
-`
-
-const Icon = styled(({ className, ...rest }) => {
-    return <span className={`material-icons ${className}`} {...rest} />
-})`
-  font-size: 18px;
-  vertical-align: text-bottom;
-`
-
-const Menu = styled('div')`
-  & > * {
-    display: inline-block;
-  }
-
-  & > * + * {
-    margin-left: 15px;
-  }
-`
-
-const Toolbar = styled(Menu)`
-  position: relative;
-  padding: 1px 18px 17px;
-  margin: 0 -20px;
-  border-bottom: 2px solid #eee;
-  margin-bottom: 20px;
-`
-
-const Image = styled('img')`
-  display: block;
-  max-width: 100%;
-  max-height: 20em;
-  box-shadow: ${props => (props.selected ? '0 0 0 2px blue;' : 'none')};
-`
-
+import { Button, Icon, Toolbar, Image, FileBase64 } from './components';
+import './SlateEditor.css';
 
 /**
  * Define the default node type.
@@ -71,6 +27,16 @@ const isItalicHotkey = isKeyHotkey('mod+i')
 const isUnderlinedHotkey = isKeyHotkey('mod+u')
 const isCodeHotkey = isKeyHotkey('mod+`')
 
+
+/**
+ * Has Parent
+ * @param value
+ * @param type
+ * @returns {*}
+ */
+const hasParentOfType = (value, type) => value.blocks.some(
+    block => !!value.document.getClosest(block.key, parent => parent.type === type)
+)
 
 /*
  * A function to determine whether a URL has an image extension.
@@ -376,6 +342,9 @@ class slateEditor extends Component {
 
     onKeyDown = (event, editor, next) => {
         let mark
+        const isList = this.hasBlock('list-item')
+        const { value: { blocks } } = this.state;
+
 
         if (isBoldHotkey(event)) {
             mark = 'bold'
@@ -385,6 +354,27 @@ class slateEditor extends Component {
             mark = 'underlined'
         } else if (isCodeHotkey(event)) {
             mark = 'code'
+        } else if (event.key === 'Tab') {
+            event.preventDefault();
+            if(isList){
+
+                const { value } = editor;
+                let listType = '';
+                if(hasParentOfType(value, 'numbered-list')){
+                    listType = 'numbered-list';
+                }else if(hasParentOfType(value, 'bulleted-list')){
+                    listType = 'bulleted-list';
+                }
+
+                if(blocks.size>0){
+                    if (event.shiftKey){
+                        editor.unwrapBlock(listType).focus()
+                    }else{
+                        editor.setBlocks('list-item').wrapBlock(listType).focus();
+                    }
+                }
+            }
+            return next()
         } else {
             return next()
         }
