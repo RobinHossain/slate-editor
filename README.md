@@ -1,9 +1,14 @@
 ## Available scripts for this task
+
+`git clone https://github.com/RobinHossain/slate-editor.git`
+
+`cd slate-editor`
+
 I used with node version v8.9.1 for development -
 In the project directory, you can run:
-
-### `npm install`
-### `npm start`
+ `npm install`
+ 
+ `npm start`
 
 The Project build with React and bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 Hopefully you would able to see the output with following url after run above commands. [http://localhost:3000](http://localhost:3000).
