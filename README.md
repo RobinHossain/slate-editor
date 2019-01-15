@@ -6,6 +6,7 @@
 
 I used with node version v8.9.1 for development -
 In the project directory, you can run:
+
  `npm install`
  
  `npm start`
