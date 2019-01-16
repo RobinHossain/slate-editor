@@ -37,7 +37,25 @@ const isCodeHotkey = isKeyHotkey('mod+`')
  */
 const hasParentOfType = (value, type) => value.blocks.some(
     block => !!value.document.getClosest(block.key, parent => parent.type === type)
-)
+);
+
+/**
+ * Get Node Type
+ * @param value
+ * @param type
+ * @returns {V | any}
+ */
+const getNodeOfType = (value, type) => value.blocks.filter(
+    block => block.type === type
+).first();
+
+/**
+ * Get Depth of List item
+ * @param value
+ * @param node
+ * @returns {*}
+ */
+const getDepthOfList = (value, node) => value.document.getDepth(node.key);
 
 /*
  * A function to determine whether a URL has an image extension.
@@ -347,7 +365,8 @@ class slateEditor extends Component {
     onKeyDown = (event, editor, next) => {
         let mark
         const isList = this.hasBlock('list-item')
-        const { value: { blocks } } = this.state;
+        const { value } = editor;
+        const node = getNodeOfType(value, 'list-item')
 
 
         if (isBoldHotkey(event)) {
@@ -362,7 +381,7 @@ class slateEditor extends Component {
             event.preventDefault();
             if(isList){
 
-                const { value } = editor;
+                const depth = getDepthOfList(value, node);
                 let listType = '';
                 if(hasParentOfType(value, 'numbered-list')){
                     listType = 'numbered-list';
@@ -370,12 +389,14 @@ class slateEditor extends Component {
                     listType = 'bulleted-list';
                 }
 
-                if(blocks.size>0){
+                if(depth>1){
                     if (event.shiftKey){
-                        editor.unwrapBlock(listType).focus()
-                    }else{
+                        editor.unwrapBlock(listType).focus();
+                    }else if(depth<4){
                         editor.setBlocks('list-item').wrapBlock(listType).focus();
                     }
+                }else if(event.shiftKey && depth){
+                    editor.setBlocks('paragraph').unwrapBlock(listType).focus();
                 }
             }
             return next()
